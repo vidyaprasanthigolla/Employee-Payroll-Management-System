@@ -1,0 +1,215 @@
+/* Modern Clean Stylesheet for Employee Payroll Management System */
+:root {
+  --primary-color: #1a2f5a;
+  --primary-light: #2e6fad;
+  --secondary-color: #0f172a;
+  --accent-color: #3b82f6;
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+  --sidebar-width: 260px;
+  --topbar-height: 64px;
+  --border-color: #e2e8f0;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-color);
+  color: #1e293b;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* Sidebar Styling */
+#sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: var(--secondary-color);
+  color: #fff;
+  transition: all 0.3s;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+#sidebar .brand {
+  padding: 1.25rem 1.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  text-decoration: none;
+}
+
+#sidebar .nav-link {
+  color: #94a3b8;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.925rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+#sidebar .nav-link:hover,
+#sidebar .nav-link.active {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-left: 4px solid var(--accent-color);
+}
+
+#sidebar .nav-section-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 600;
+  padding: 1.25rem 1.5rem 0.4rem;
+  letter-spacing: 1px;
+}
+
+/* Main Content Area */
+#main-wrapper {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top Navbar */
+#topbar {
+  height: var(--topbar-height);
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-circle {
+  width: 38px;
+  height: 38px;
+  background-color: var(--primary-light);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 600;
+}
+
+/* Content Area */
+.content-body {
+  padding: 2rem;
+  flex: 1;
+}
+
+/* Stat Cards */
+.kpi-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.kpi-val {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--secondary-color);
+  margin-bottom: 0.2rem;
+}
+
+.kpi-label {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Custom Table Styling */
+.custom-table-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.custom-table th {
+  background-color: #f8fafc;
+  color: #475569;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.custom-table td {
+  padding: 1rem 1.25rem;
+  vertical-align: middle;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Badges */
+.badge-status-active { background-color: #dcfce7; color: #166534; }
+.badge-status-approved { background-color: #dbeafe; color: #1e40af; }
+.badge-status-paid { background-color: #d1fae5; color: #065f46; }
+.badge-status-draft { background-color: #fef3c7; color: #92400e; }
+.badge-status-rejected { background-color: #fee2e2; color: #991b1b; }
+.badge-status-pending { background-color: #ffedd5; color: #9a3412; }
+
+/* Modal tweaks */
+.modal-content {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.25rem 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-color);
+  padding: 1rem 1.5rem;
+}
