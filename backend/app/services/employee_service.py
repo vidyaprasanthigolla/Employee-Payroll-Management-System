@@ -241,3 +241,20 @@ class EmployeeService:
         db.delete(emp)
         db.commit()
         return True
+    @staticmethod
+    def update_employee_name(
+        db: Session,
+        employee_id: int,
+        first_name: str,
+        last_name: str
+    ) -> EmployeeResponse:
+
+        emp = EmployeeService.get_employee_by_id(db, employee_id)
+
+        emp.first_name = first_name.strip()
+        emp.last_name = last_name.strip()
+
+        db.commit()
+        db.refresh(emp)
+
+        return EmployeeService.format_employee_response(emp)

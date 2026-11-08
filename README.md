@@ -166,7 +166,7 @@ Once running, access:
 | **Admin** | `admin@payroll.com` | `Admin@123` | Master control, payroll approval, wage disbursement, full reporting |
 | **HR Manager** | `hr@payroll.com` | `Hr@123` | Employee CRUD, attendance logging, leave approvals, payroll batch generation |
 | **Employee 1** | `employee@payroll.com` | `Employee@123` | Self-service profile (`EMP1001`), apply leaves, view/download payslips |
-| **Employee 2** | `jane@payroll.com` | `Employee@123` | Self-service profile (`EMP1002`) |
+| **Employee 2** | `jane@payroll.com` | `Jane@123` | Self-service profile (`EMP1002`) |
 
 ---
 

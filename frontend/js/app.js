@@ -72,6 +72,11 @@ async function renderApp() {
 }
 
 function getSidebarLinks(role, currentHash) {
+  // Normalize role names returned by the API. The demo HR account may return
+  // "HR", while some installations use "HR_MANAGER".
+  const normalizedRole = String(role || "").trim().toUpperCase();
+  const isAdminOrHR = ["ADMIN", "HR", "HR_MANAGER"].includes(normalizedRole);
+
   let links = `
     <div class="nav-section-title">Overview</div>
     <a class="nav-link ${currentHash === "#dashboard" ? "active" : ""}" onclick="navigate('#dashboard')">
@@ -79,7 +84,7 @@ function getSidebarLinks(role, currentHash) {
     </a>
   `;
 
-  if (role === "ADMIN" || role === "HR_MANAGER") {
+  if (isAdminOrHR) {
     links += `
       <div class="nav-section-title">Human Resources</div>
       <a class="nav-link ${currentHash === "#employees" ? "active" : ""}" onclick="navigate('#employees')">

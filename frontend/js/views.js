@@ -156,8 +156,17 @@ const views = {
           datasets: [{
             label: "Headcount",
             data: Object.values(deptCounts),
-            backgroundColor: "#2e6fad",
-            borderRadius: 6
+            backgroundColor: Object.keys(deptCounts).map(dept => {
+                const departmentColors = {
+                    "Sales & Marketing": "#2563EB",
+                    "Finance & Accounts": "#D97706",
+                    "Engineering": "#0F766E",
+                    "Unassigned": "#7C3AED"
+                };
+
+                return departmentColors[dept] || "#64748B";
+            }),
+            borderRadius: 6,
           }]
         },
         options: {
@@ -181,7 +190,17 @@ const views = {
           labels: Object.keys(statusCounts),
           datasets: [{
             data: Object.values(statusCounts),
-            backgroundColor: ["#fef3c7", "#dbeafe", "#d1fae5"]
+            backgroundColor: [
+                "#D97706",  // Draft - Orange
+                "#64748B",  // Approved - Blue
+                "#0F766E"   // Paid - Green
+            ],
+            borderColor: [
+                "#D97706",  
+                "#64748B", 
+                "#0F766E"
+            ],
+            borderWidth: 2
           }]
         },
         options: {
@@ -254,6 +273,268 @@ const views = {
         </table>
       </div>
     `;
+  },
+  
+  async showCreateEmployeeModal() {
+    try {
+      // Load dropdown data
+      const [deptResponse, desigResponse] = await Promise.all([
+        api.get("/departments"),
+        api.get("/designations")
+      ]);
+
+      // Support either array or paginated API responses
+      const departments = Array.isArray(deptResponse)
+        ? deptResponse
+        : (deptResponse.items || []);
+
+      const designations = Array.isArray(desigResponse)
+        ? desigResponse
+        : (desigResponse.items || []);
+
+      // Remove an older modal if it exists
+      document.getElementById("createEmployeeModal")?.remove();
+
+      const modalHTML = `
+        <div class="modal fade" id="createEmployeeModal" tabindex="-1">
+          <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content" style="max-height: 95vh; display: flex; flex-direction: column;">
+              <div class="modal-header">
+                <h5 class="modal-title fw-bold">Add New Employee</h5>
+                <button type="button" class="btn-close"
+                  data-bs-dismiss="modal"></button>
+              </div>
+
+              <form id="create-employee-form" style="display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;">
+                <div class="modal-body" style="overflow-y: auto; flex: 1 1 auto; min-height: 0;">
+                  <h6 class="text-primary fw-bold mb-3">Personal Details</h6>
+
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label">First Name *</label>
+                      <input name="first_name" class="form-control"
+                        maxlength="50" required>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Last Name *</label>
+                      <input name="last_name" class="form-control"
+                        maxlength="50" required>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Phone *</label>
+                      <input name="phone" class="form-control"
+                        minlength="7" maxlength="20" required>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Date of Birth *</label>
+                      <input type="date" name="date_of_birth"
+                        class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Gender *</label>
+                      <select name="gender" class="form-select" required>
+                        <option value="">Select Gender</option>
+                        <option value="MALE">Male</option>
+                        <option value="FEMALE">Female</option>
+                        <option value="OTHER">Other</option>
+                      </select>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Date of Joining *</label>
+                      <input type="date" name="date_of_joining"
+                        class="form-control" required>
+                    </div>
+
+                    <div class="col-12">
+                      <label class="form-label">Address</label>
+                      <textarea name="address" class="form-control"
+                        rows="2"></textarea>
+                    </div>
+                  </div>
+
+                  <hr>
+                  <h6 class="text-primary fw-bold mb-3">Employment Details</h6>
+
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Department</label>
+                      <select name="department_id" class="form-select">
+                        <option value="">Select Department</option>
+                        ${departments.map(d =>
+                          `<option value="${d.id}">${d.name}</option>`
+                        ).join("")}
+                      </select>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Designation</label>
+                      <select name="designation_id" class="form-select">
+                        <option value="">Select Designation</option>
+                        ${designations.map(d =>
+                          `<option value="${d.id}">${d.title}</option>`
+                        ).join("")}
+                      </select>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Employment Type *</label>
+                      <select name="employment_type" class="form-select" required>
+                        <option value="FULL_TIME">Full Time</option>
+                        <option value="PART_TIME">Part Time</option>
+                        <option value="CONTRACT">Contract</option>
+                        <option value="INTERN">Intern</option>
+                      </select>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Status *</label>
+                      <select name="status" class="form-select" required>
+                        <option value="ACTIVE">Active</option>
+                        <option value="PROBATION">Probation</option>
+                        <option value="RESIGNED">Resigned</option>
+                        <option value="TERMINATED">Terminated</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <hr>
+                  <h6 class="text-primary fw-bold mb-3">Bank Details</h6>
+
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Bank Name *</label>
+                      <input name="bank_name" class="form-control"
+                        minlength="2" maxlength="100" required>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Bank Account Number *</label>
+                      <input name="bank_account_number" class="form-control"
+                        minlength="5" maxlength="50" required>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">IFSC Code *</label>
+                      <input name="ifsc_code" class="form-control"
+                        minlength="4" maxlength="20" required>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">PAN Number *</label>
+                      <input name="pan_number" class="form-control"
+                        minlength="5" maxlength="20" required>
+                    </div>
+                  </div>
+
+                  <hr>
+                  <h6 class="text-primary fw-bold mb-3">Login Account</h6>
+
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Employee Email *</label>
+                      <input type="email" name="email" class="form-control"
+                        required>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Login Password *</label>
+                      <input type="password" name="password"
+                        class="form-control" minlength="6" required>
+                    </div>
+                  </div>
+
+                  <small class="text-muted d-block mt-2">
+                    A login account with the Employee role will be created automatically.
+                    The employee code will also be generated automatically.
+                  </small>
+                </div>
+
+                <div class="modal-footer" style="flex-shrink: 0;">
+                  <button type="button" class="btn btn-light"
+                    data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" id="save-employee-btn"
+                    class="btn btn-primary">
+                    Save Employee
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+      const modalElement = document.getElementById("createEmployeeModal");
+      const modal = new bootstrap.Modal(modalElement);
+      const form = document.getElementById("create-employee-form");
+      const saveButton = document.getElementById("save-employee-btn");
+
+      modal.show();
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        if (!form.reportValidity()) return;
+
+        const formData = new FormData(form);
+
+        const payload = {
+          first_name: formData.get("first_name").trim(),
+          last_name: formData.get("last_name").trim(),
+          phone: formData.get("phone").trim(),
+          address: formData.get("address").trim() || null,
+          date_of_birth: formData.get("date_of_birth"),
+          gender: formData.get("gender"),
+          date_of_joining: formData.get("date_of_joining"),
+          department_id: formData.get("department_id")
+            ? Number(formData.get("department_id")) : null,
+          designation_id: formData.get("designation_id")
+            ? Number(formData.get("designation_id")) : null,
+          employment_type: formData.get("employment_type"),
+          status: formData.get("status"),
+          bank_name: formData.get("bank_name").trim(),
+          bank_account_number: formData.get("bank_account_number").trim(),
+          ifsc_code: formData.get("ifsc_code").trim().toUpperCase(),
+          pan_number: formData.get("pan_number").trim().toUpperCase(),
+          create_login_account: true,
+          email: formData.get("email").trim(),
+          password: formData.get("password")
+        };
+
+        try {
+          saveButton.disabled = true;
+          saveButton.textContent = "Saving...";
+
+          await api.post("/employees", payload);
+
+          modal.hide();
+          alert("Employee created successfully!");
+
+          await this.renderEmployees(
+            document.getElementById("page-content")
+          );
+
+        } catch (error) {
+          alert("Failed to create employee: " + error.message);
+        } finally {
+          saveButton.disabled = false;
+          saveButton.textContent = "Save Employee";
+        }
+      });
+
+      modalElement.addEventListener("hidden.bs.modal", () => {
+        modalElement.remove();
+      }, { once: true });
+
+    } catch (error) {
+      alert("Unable to open employee form: " + error.message);
+    }
   },
 
   // -------------------------------------------------------------
@@ -405,10 +686,12 @@ const views = {
                   <td><code>${c.code}</code></td>
                   <td><strong>${c.name}</strong></td>
                   <td>
-                    <span class="badge ${c.component_type === 'EARNING' ? 'bg-primary' : 'bg-danger'}">${c.component_type}</span>
+                    <span class="badge ${c.type === 'EARNING' ? 'bg-primary' : 'bg-danger'}">${c.type || 'Not configured'}</span>
                   </td>
-                  <td>${c.calculation_type}</td>
-                  <td>${c.calculation_type === 'PERCENTAGE' ? `${c.default_value}%` : `₹${c.default_value}`}</td>
+                  <td>${c.calculation_type || 'Not configured'}</td>
+                  <td>${c.calculation_type === 'PERCENTAGE'
+                    ? `${Number(c.default_value ?? 0).toLocaleString('en-IN')}%`
+                    : `₹${Number(c.default_value ?? 0).toLocaleString('en-IN')}`}</td>
                   <td>${c.is_taxable ? 'Yes' : 'No'}</td>
                 </tr>
               `).join('')}
@@ -676,8 +959,15 @@ const views = {
   },
 
   async renderEmployeeAttendance(container) {
-    const records = await api.get("/attendance/me");
-    const summary = await api.get("/attendance/monthly-summary?month=11&year=2026");
+    const employee = await api.get("/employees/me");
+    const today = new Date();
+    const month = today.getMonth() + 1;
+    const year = today.getFullYear();
+
+    const [records, summary] = await Promise.all([
+      api.get("/attendance/me"),
+      api.get(`/attendance/summary/${employee.id}?month=${month}&year=${year}`)
+    ]);
 
     container.innerHTML = `
       <div class="row g-3 mb-4">
@@ -732,9 +1022,10 @@ const views = {
   },
 
   async renderEmployeeLeaves(container) {
+    const year = new Date().getFullYear();
     const [balances, myRequests] = await Promise.all([
-      api.get("/leaves/my-balances?year=2026"),
-      api.get("/leaves/my-requests")
+      api.get(`/leaves/balances/me?year=${year}`),
+      api.get("/leaves/me")
     ]);
 
     container.innerHTML = `
@@ -744,9 +1035,9 @@ const views = {
             <div class="kpi-card">
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="badge bg-secondary">${b.leave_type}</span>
-                <span class="small text-muted">Total: ${b.allocated}</span>
+                <span class="small text-muted">Total: ${b.total_allocated}</span>
               </div>
-              <div class="kpi-val">${b.available}</div>
+              <div class="kpi-val">${b.remaining}</div>
               <div class="kpi-label">Days Available (Used: ${b.used})</div>
             </div>
           </div>
@@ -761,7 +1052,8 @@ const views = {
             <select class="form-select form-select-sm" id="leave-type" required>
               <option value="CASUAL">Casual Leave</option>
               <option value="SICK">Sick Leave</option>
-              <option value="PAID">Paid Leave</option>
+              <option value="EARNED">Earned Leave</option>
+              <option value="UNPAID">Unpaid Leave</option>
             </select>
           </div>
           <div class="col-md-3">
@@ -821,7 +1113,7 @@ const views = {
           reason: document.getElementById("leave-reason").value
         });
         alert("Leave request submitted successfully.");
-        this.renderEmployeeLeaves(container);
+        await this.renderEmployeeLeaves(container);
       } catch (err) {
         alert(err.message);
       }

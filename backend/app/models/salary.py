@@ -24,6 +24,11 @@ class SalaryComponent(Base):
     code = Column(String(20), unique=True, index=True, nullable=False)
     type = Column(Enum(ComponentType), nullable=False, index=True)
     calculation_type = Column(Enum(CalculationType), default=CalculationType.FLAT, nullable=False)
+    default_value = Column(
+    Numeric(12, 2),
+    default=Decimal("0.00"),
+    nullable=False
+)
     is_taxable = Column(Boolean, default=True, nullable=False)
     is_statutory = Column(Boolean, default=False, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False, index=True)

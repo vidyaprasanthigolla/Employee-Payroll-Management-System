@@ -63,6 +63,7 @@ class SalaryService:
             code=clean_code,
             type=comp_in.type,
             calculation_type=comp_in.calculation_type,
+            default_value=comp_in.default_value,
             is_taxable=comp_in.is_taxable,
             is_statutory=comp_in.is_statutory,
             is_active=comp_in.is_active,
@@ -97,7 +98,15 @@ class SalaryService:
                 raise DuplicateResourceException(f"Component name '{clean_name}' is already used.")
             comp.name = clean_name
 
-        for field in ["type", "calculation_type", "is_taxable", "is_statutory", "is_active", "description"]:
+        for field in [
+    "type",
+    "calculation_type",
+    "default_value",
+    "is_taxable",
+    "is_statutory",
+    "is_active",
+    "description"
+]:
             val = getattr(comp_in, field)
             if val is not None:
                 setattr(comp, field, val)
@@ -259,18 +268,18 @@ class SalaryService:
     def seed_default_components(db: Session) -> List[SalaryComponent]:
         defaults = [
             # Earnings
-            {"name": "Basic Salary", "code": "BASIC", "type": ComponentType.EARNING, "calc": CalculationType.FLAT, "taxable": True, "statutory": True, "desc": "Fixed core wage component"},
-            {"name": "House Rent Allowance", "code": "HRA", "type": ComponentType.EARNING, "calc": CalculationType.PERCENTAGE, "taxable": True, "statutory": False, "desc": "Housing subsidy (e.g. 40% of Basic)"},
-            {"name": "Dearness Allowance", "code": "DA", "type": ComponentType.EARNING, "calc": CalculationType.PERCENTAGE, "taxable": True, "statutory": False, "desc": "Cost of living adjustment"},
-            {"name": "Conveyance Allowance", "code": "CONV", "type": ComponentType.EARNING, "calc": CalculationType.FLAT, "taxable": False, "statutory": False, "desc": "Commute and transit allowance"},
-            {"name": "Medical Allowance", "code": "MED", "type": ComponentType.EARNING, "calc": CalculationType.FLAT, "taxable": False, "statutory": False, "desc": "Routine health and wellness reimbursement"},
-            {"name": "Special Allowance", "code": "SPL_ALW", "type": ComponentType.EARNING, "calc": CalculationType.FLAT, "taxable": True, "statutory": False, "desc": "Performance and executive allowance"},
-            {"name": "Performance Bonus", "code": "BONUS", "type": ComponentType.EARNING, "calc": CalculationType.FLAT, "taxable": True, "statutory": False, "desc": "Quarterly or discretionary milestone incentive"},
+            {"name": "Basic Salary", "code": "BASIC", "type": ComponentType.EARNING, "calc": CalculationType.FLAT,"value": Decimal("20000.00"), "taxable": True, "statutory": True, "desc": "Fixed core wage component"},
+            {"name": "House Rent Allowance", "code": "HRA", "type": ComponentType.EARNING, "calc": CalculationType.PERCENTAGE,"value": Decimal("40.00"),"taxable": True, "statutory": False, "desc": "Housing subsidy (e.g. 40% of Basic)"},
+            {"name": "Dearness Allowance", "code": "DA", "type": ComponentType.EARNING, "calc": CalculationType.PERCENTAGE, "value": Decimal("10.00"),"taxable": True, "statutory": False, "desc": "Cost of living adjustment"},
+            {"name": "Conveyance Allowance", "code": "CONV", "type": ComponentType.EARNING, "calc": CalculationType.FLAT,"value": Decimal("1600.00"), "taxable": False, "statutory": False, "desc": "Commute and transit allowance"},
+            {"name": "Medical Allowance", "code": "MED", "type": ComponentType.EARNING, "calc": CalculationType.FLAT,"value": Decimal("1250.00"), "taxable": False,"statutory": False, "desc": "Routine health and wellness reimbursement"},
+            {"name": "Special Allowance", "code": "SPL_ALW", "type": ComponentType.EARNING, "calc": CalculationType.FLAT,"value": Decimal("0.00"), "taxable": True, "statutory": False, "desc": "Performance and executive allowance"},
+            {"name": "Performance Bonus", "code": "BONUS", "type": ComponentType.EARNING, "calc": CalculationType.FLAT, "value": Decimal("0.00"),"taxable": True, "statutory": False, "desc": "Quarterly or discretionary milestone incentive"},
             # Deductions
-            {"name": "Provident Fund", "code": "PF", "type": ComponentType.DEDUCTION, "calc": CalculationType.PERCENTAGE, "taxable": False, "statutory": True, "desc": "Employee statutory retirement pension (12% of Basic)"},
-            {"name": "Employee State Insurance", "code": "ESI", "type": ComponentType.DEDUCTION, "calc": CalculationType.PERCENTAGE, "taxable": False, "statutory": True, "desc": "State healthcare safety contribution"},
-            {"name": "Professional Tax", "code": "PT", "type": ComponentType.DEDUCTION, "calc": CalculationType.FLAT, "taxable": False, "statutory": True, "desc": "State statutory professional levy"},
-            {"name": "Tax Deducted at Source", "code": "TDS", "type": ComponentType.DEDUCTION, "calc": CalculationType.FLAT, "taxable": False, "statutory": True, "desc": "Federal/National income tax withholding"},
+            {"name": "Provident Fund", "code": "PF", "type": ComponentType.DEDUCTION, "calc": CalculationType.PERCENTAGE,"value": Decimal("12.00"), "taxable": False, "statutory": True, "desc": "Employee statutory retirement pension (12% of Basic)"},
+            {"name": "Employee State Insurance", "code": "ESI", "type": ComponentType.DEDUCTION, "calc": CalculationType.PERCENTAGE, "value": Decimal("0.75.00"),"taxable": False, "statutory": True, "desc": "State healthcare safety contribution"},
+            {"name": "Professional Tax", "code": "PT", "type": ComponentType.DEDUCTION, "calc": CalculationType.FLAT,"value": Decimal("200.00"), "taxable": False, "statutory": True, "desc": "State statutory professional levy"},
+            {"name": "Tax Deducted at Source", "code": "TDS", "type": ComponentType.DEDUCTION, "calc": CalculationType.FLAT,"value": Decimal("0.00"), "taxable": False, "statutory": True, "desc": "Federal/National income tax withholding"},
         ]
 
         created = []
@@ -282,6 +291,7 @@ class SalaryService:
                     code=d["code"],
                     type=d["type"],
                     calculation_type=d["calc"],
+                    default_value=d["value"],
                     is_taxable=d["taxable"],
                     is_statutory=d["statutory"],
                     is_active=True,
@@ -290,7 +300,11 @@ class SalaryService:
                 db.add(comp)
                 created.append(comp)
             else:
+                existing.default_value = d["value"]
+                existing.type = d["type"]
+                existing.calculation_type = d["calc"]
+                existing.is_taxable = d["taxable"]
+                existing.is_statutory = d["statutory"]
                 created.append(existing)
-
         db.commit()
         return created

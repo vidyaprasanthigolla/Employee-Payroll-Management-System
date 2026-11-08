@@ -7,6 +7,7 @@ from app.models.user import User, UserRole
 from app.schemas.employee import (
     EmployeeCreate,
     EmployeeUpdate,
+    EmployeeNameUpdate,
     EmployeeStatusUpdate,
     EmployeeResponse,
     EmployeePaginationResponse
@@ -90,6 +91,20 @@ def update_employee(
 ):
     """Updates demographic, designation, or banking details. Accessible by Admin and HR."""
     return EmployeeService.update_employee(db, emp_id, emp_in)
+
+@router.patch("/{emp_id}/name", response_model=EmployeeResponse)
+def update_employee_name(
+    emp_id: int,
+    name_data: EmployeeNameUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_hr_or_admin)
+):
+    return EmployeeService.update_employee_name(
+        db,
+        emp_id,
+        name_data.first_name,
+        name_data.last_name
+    )
 
 
 @router.patch("/{emp_id}/status", response_model=EmployeeResponse, summary="Update employment status")

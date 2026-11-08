@@ -10,6 +10,7 @@ class SalaryComponentBase(BaseModel):
     code: str = Field(..., min_length=2, max_length=20)
     type: ComponentType
     calculation_type: CalculationType = CalculationType.FLAT
+    default_value: Decimal = Field(default=Decimal("0.00"), ge=0)
     is_taxable: bool = True
     is_statutory: bool = False
     is_active: bool = True
@@ -25,6 +26,7 @@ class SalaryComponentUpdate(BaseModel):
     code: Optional[str] = Field(None, min_length=2, max_length=20)
     type: Optional[ComponentType] = None
     calculation_type: Optional[CalculationType] = None
+    default_value: Optional[Decimal] = Field(None, ge=0)
     is_taxable: Optional[bool] = None
     is_statutory: Optional[bool] = None
     is_active: Optional[bool] = None

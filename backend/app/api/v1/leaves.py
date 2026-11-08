@@ -41,28 +41,53 @@ def apply_leave(
     return LeaveService.apply_leave(db, target_emp_id, leave_in)
 
 
-@router.get("/my-requests", response_model=List[LeaveRequestResponse], summary="Get current user's leave history")
+@router.get("/me", response_model=List[LeaveRequestResponse], summary="Get the current employee's leave requests")
 def get_my_leave_requests(
-    status: Optional[LeaveStatus] = Query(None, description="Filter by status (PENDING, APPROVED, REJECTED)"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_authenticated)
 ):
-    """Retrieves all past and pending leave applications submitted by the logged-in user."""
     emp = EmployeeService.get_employee_by_user_id(db, current_user.id)
-    return LeaveService.get_leave_requests(db, employee_id=emp.id, status=status)
+    return LeaveService.get_leave_requests(db, employee_id=emp.id)
 
 
-@router.get("/my-balances", response_model=List[LeaveBalanceResponse], summary="Get current user's annual leave quotas")
+@router.get("/balances/me", response_model=List[LeaveBalanceResponse], summary="Get the current employee's leave balances")
 def get_my_leave_balances(
-    year: Optional[int] = Query(None, description="Calendar year (defaults to current year)"),
+    year: Optional[int] = Query(None, description="Calendar year"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_authenticated)
 ):
-    """Returns available, used, and remaining leave quotas for the employee."""
-    target_year = year or date.today().year
     emp = EmployeeService.get_employee_by_user_id(db, current_user.id)
+    target_year = year or date.today().year
     return LeaveService.get_leave_balances(db, emp.id, target_year)
 
+
+@router.get("/requests", response_model=List[LeaveRequestResponse], summary="List all leave requests across company (Admin and HR)")
+def list_all_leave_requests(
+    employee_id: Optional[int] = Query(None, description="Filter by employee ID"),
+    status: Optional[LeaveStatus] = Query(None, description="Filter by request status"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_hr_or_admin)
+):
+    """Company-wide leave request inbox for HR and Administrators."""
+    return LeaveService.get_leave_requests(db, employee_id=employee_id, status=status)
+
+
+@router.get(
+    "/pending",
+    response_model=List[LeaveRequestResponse],
+    summary="Get all pending leave requests"
+)
+def get_pending_leave_requests(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_hr_or_admin)
+):
+    """
+    Returns all pending leave applications for Admin and HR.
+    """
+    return LeaveService.get_leave_requests(
+        db,
+        status=LeaveStatus.PENDING
+    )
 
 @router.get("/requests", response_model=List[LeaveRequestResponse], summary="List all leave requests across company (Admin and HR)")
 def list_all_leave_requests(
